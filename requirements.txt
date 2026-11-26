@@ -1,0 +1,10 @@
+torch>=2.2
+transformers>=4.45
+datasets>=2.20
+peft>=0.12
+accelerate>=0.34
+PyYAML>=6.0
+safetensors>=0.4
+tqdm>=4.66
+# Optional GPU 4-bit QLoRA dependency:
+# bitsandbytes>=0.43
