@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "juvao-ai"
+version = "0.1.0"
+description = "Compact English conversational model fine-tuning toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+  "torch>=2.2",
+  "transformers>=4.45",
+  "datasets>=2.20",
+  "peft>=0.12",
+  "accelerate>=0.34",
+  "PyYAML>=6.0",
+  "safetensors>=0.4",
+  "tqdm>=4.66"
+]
+
+[project.optional-dependencies]
+qlora = ["bitsandbytes>=0.43"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+juvao = "juvao.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
