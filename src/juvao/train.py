@@ -24,7 +24,9 @@ def train(config_path: str):
         cfg["model"], cfg["data"], cfg["lora"], cfg["training"]
     )
     use_cuda = torch.cuda.is_available()
-    use_4bit = bool(train_cfg.get("use_4bit", False) and use_cuda)
+    if not use_cuda:
+        raise RuntimeError("Juvao AI training is GPU-only. Enable a CUDA GPU (for example, in Kaggle Notebook Settings) and restart the session.")
+    use_4bit = bool(train_cfg.get("use_4bit", False))
     compute_dtype = torch.bfloat16 if (
         use_cuda and torch.cuda.is_bf16_supported() and train_cfg.get("bf16", True)
     ) else torch.float16
@@ -46,7 +48,7 @@ def train(config_path: str):
             load_kwargs["device_map"] = "auto"
         except ImportError as exc:
             raise RuntimeError("Install bitsandbytes to use 4-bit QLoRA.") from exc
-    elif use_cuda:
+    else:
         load_kwargs["torch_dtype"] = compute_dtype
 
     model = AutoModelForCausalLM.from_pretrained(model_cfg["name_or_path"], **load_kwargs)
