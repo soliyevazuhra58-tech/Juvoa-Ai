@@ -16,11 +16,11 @@ This repository contains the training and inference pipeline. A trained checkpoi
 - Checkpointing, resume support and configurable training
 - Base-vs-fine-tuned evaluation and interactive inference
 - Adapter export in standard PEFT format; optional merged model export
-- Kaggle notebook with GPU detection and CPU fallback
+- Automatic CPU/GPU selection in CLI and Kaggle notebook
 
 ## Quick start
 
-Python 3.10+ is recommended. For GPU training, use a Kaggle notebook with a CUDA GPU and install the appropriate PyTorch build for that runtime.
+Python 3.10+ is recommended. Training and inference automatically use CUDA when available, otherwise CPU. A CUDA GPU is strongly recommended for practical fine-tuning speed.
 
 ```bash
 git clone https://github.com/soliyevazuhra58-tech/Juvoa-Ai.git
@@ -65,9 +65,9 @@ python -m juvao.cli evaluate --adapter outputs/juvao-lora --prompts data/eval/pr
 
 The evaluation script compares base and adapter generations on the same prompts. This is a simple qualitative comparison, not a benchmark or proof of improved capability.
 
-## CPU fallback
+## Automatic device selection
 
-The code detects CUDA availability and can run inference/training without 4-bit quantization on CPU. CPU fine-tuning may be very slow and memory-intensive. QLoRA requires a supported CUDA environment and bitsandbytes; it is disabled automatically when unavailable.
+The training and inference code automatically selects CUDA when a supported GPU is available; otherwise it uses CPU. 4-bit QLoRA is enabled only on CUDA with bitsandbytes. CPU mode uses full-precision weights and standard LoRA (no 4-bit quantization). CPU fine-tuning can be substantially slower and may require reducing batch size and sequence length.
 
 ## Reproducibility
 
