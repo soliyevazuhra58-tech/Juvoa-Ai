@@ -24,12 +24,11 @@ def train(config_path: str):
         cfg["model"], cfg["data"], cfg["lora"], cfg["training"]
     )
     use_cuda = torch.cuda.is_available()
-    if not use_cuda:
-        raise RuntimeError("Juvao AI training is GPU-only. Enable a CUDA GPU (for example, in Kaggle Notebook Settings) and restart the session.")
-    use_4bit = bool(train_cfg.get("use_4bit", False))
-    compute_dtype = torch.bfloat16 if (
-        use_cuda and torch.cuda.is_bf16_supported() and train_cfg.get("bf16", True)
-    ) else torch.float16
+    use_4bit = bool(train_cfg.get("use_4bit", False) and use_cuda)
+    use_bf16 = bool(use_cuda and torch.cuda.is_bf16_supported() and train_cfg.get("bf16", True))
+    compute_dtype = torch.bfloat16 if use_bf16 else (torch.float16 if use_cuda else torch.float32)
+    device_name = torch.cuda.get_device_name(0) if use_cuda else "CPU"
+    print(f"Training device: {device_name}; 4-bit QLoRA: {use_4bit}")
 
     tokenizer = AutoTokenizer.from_pretrained(model_cfg["name_or_path"])
     if tokenizer.pad_token is None:
@@ -81,7 +80,6 @@ def train(config_path: str):
     if eval_ds is not None:
         eval_ds = eval_ds.map(tokenize, batched=True, remove_columns=["text"])
 
-    use_bf16 = bool(use_cuda and torch.cuda.is_bf16_supported() and train_cfg.get("bf16", True))
     use_fp16 = bool(use_cuda and not use_bf16)
 
     args = TrainingArguments(
