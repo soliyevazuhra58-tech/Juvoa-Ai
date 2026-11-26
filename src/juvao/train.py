@@ -79,6 +79,9 @@ def train(config_path: str):
     if eval_ds is not None:
         eval_ds = eval_ds.map(tokenize, batched=True, remove_columns=["text"])
 
+    use_bf16 = bool(use_cuda and torch.cuda.is_bf16_supported() and train_cfg.get("bf16", True))
+    use_fp16 = bool(use_cuda and not use_bf16)
+
     args = TrainingArguments(
         output_dir=train_cfg["output_dir"],
         num_train_epochs=float(train_cfg["num_train_epochs"]),
@@ -94,8 +97,8 @@ def train(config_path: str):
         eval_steps=int(train_cfg["eval_steps"]) if eval_ds is not None else None,
         save_total_limit=int(train_cfg["save_total_limit"]),
         gradient_checkpointing=bool(train_cfg.get("gradient_checkpointing", True)),
-        fp16=bool(use_cuda and train_cfg.get("fp16", False) and not torch.cuda.is_bf16_supported()),
-        bf16=bool(use_cuda and torch.cuda.is_bf16_supported() and train_cfg.get("bf16", True)),
+        fp16=use_fp16,
+        bf16=use_bf16,
         report_to="none",
         seed=int(train_cfg.get("seed", 42)),
         optim="adamw_torch",
