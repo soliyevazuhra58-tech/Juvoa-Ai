@@ -11,11 +11,14 @@ class JuvaoChat:
         self.tokenizer = AutoTokenizer.from_pretrained(adapter or base_model)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        if not torch.cuda.is_available():
-            raise RuntimeError("Juvao AI is configured for GPU-only inference. Enable a CUDA GPU and retry.")
-        self.device = "cuda"
-        kwargs = {"torch_dtype": "auto", "device_map": "auto"}
-        self.model = AutoModelForCausalLM.from_pretrained(base_model, **kwargs)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        if self.device == "cuda":
+            kwargs = {"torch_dtype": "auto", "device_map": "auto"}
+            self.model = AutoModelForCausalLM.from_pretrained(base_model, **kwargs)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.float32)
+            self.model.to(self.device)
+        print(f"Inference device: {self.device.upper()}")
         if adapter:
             self.model = PeftModel.from_pretrained(self.model, adapter)
         self.model.eval()
