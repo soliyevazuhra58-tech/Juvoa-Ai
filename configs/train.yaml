@@ -1,0 +1,35 @@
+model:
+  name_or_path: Qwen/Qwen2.5-0.5B-Instruct
+  trust_remote_code: false
+  max_seq_length: 1024
+
+data:
+  train_file: data/processed/train.jsonl
+  validation_file: data/processed/validation.jsonl
+  text_field: text
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+training:
+  output_dir: outputs/juvao-lora
+  num_train_epochs: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 0.0002
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  logging_steps: 10
+  save_steps: 100
+  eval_steps: 100
+  save_total_limit: 2
+  seed: 42
+  gradient_checkpointing: true
+  fp16: false
+  bf16: true
+  use_4bit: false
+  resume_from_checkpoint: null
